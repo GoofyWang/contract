@@ -1,0 +1,19 @@
+// EIP-1967: 使用 keccak256 生成唯一的存储插槽来存储实现合约地址
+bytes32 private constant _IMPLEMENTATION_SLOT = keccak256("eip1967.proxy.implementation");
+
+contract Proxy {
+    function _getImplementation() internal view returns (address) {
+        return StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value;
+    }
+
+    function _setImplementation(address newImplementation) internal {
+        StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value = newImplementation;
+    }
+
+    // 将调用转发到实现合约
+    fallback() external payable {
+        address impl = _getImplementation();
+        (bool success, ) = impl.delegatecall(msg.data);
+        require(success);
+    }
+}
